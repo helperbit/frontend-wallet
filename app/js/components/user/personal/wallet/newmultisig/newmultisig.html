@@ -1,0 +1,70 @@
+<!-- No admins -->
+<modal mid="noadminModal" title="{{'No admins' | translate}}">
+	<br>
+	<translate>You have not inserted any admins yet</translate>.<br>
+	<hr>
+	<div align="center">
+		<a href="/me/admin" class="btn btn-fail btn-md" translate>Manage admins</a>
+	</div>
+</modal>
+
+
+<div class="header" align="center">
+	<h3 class="title" translate>multisig wallet creation</h3>
+	<p class="subtitle" translate>Create a new multisig wallet to send and receive Bitcoin</p>
+	<img class="triangle" style="margin-top: 0.0em;" src="media/triangle.svg" />
+</div>
+
+<div class="page-modalized">
+	<div class="modal-content" ng-if="newmultisigwallet.phase == 0">
+		<div class="modal-body">
+			<div ng-if="newmultisigwallet.error == 'EW6'" class="alert alert-danger" role="alert" translate>Max 10 addresses allowed</div>
+			<div ng-if="newmultisigwallet.error == 'EW10'" class="alert alert-danger" role="alert" translate>Multisig wallets need at least {{newmultisigwallet.n > 2 && newmultisigwallet.n || 3}} admins</div>
+			<div ng-if="newmultisigwallet.error == 'EW11'" class="alert alert-danger" role="alert" translate>Multisig wallets need at least 3 admins</div>
+			<div ng-if="newmultisigwallet.error == 'E'" class="alert alert-danger" role="alert" translate>Generic error</div>
+			<div ng-if="newmultisigwallet.error == 'E3'" class="alert alert-danger" role="alert" translate>Description should be long at least 4 characters.</div>
+			<div ng-if="newmultisigwallet.error == 'EW14'" class="alert alert-danger" role="alert" translate>Multisig wallets can have maximum 10 admins</div>
+
+			<p translate>Wallet description (ie: 'Funds for Haiti flood'):</p>
+			<input type="text" class="form-control" ng-model="newmultisigwallet.label" maxlength="24" value="{{newmultisigwallet.label}}" />
+			
+			<span feature="selectablesignatures">
+				<br><br>
+				<p translate>Select the number of minimum signature you want to require for a transfer:</p>
+				<input type="number" class="form-control" ng-model="newmultisigwallet.n" value="{{newmultisigwallet.n}}" min="3" max="8" />
+			</span>
+			
+			<br><br>
+			<p translate>Select the administrator that will be able to sign a transaction provided by this wallet ({{evaluteMultisigType ()}}):</p>
+			<table class="table">
+				<tr ng-repeat="admin in newmultisigwallet.admins">
+					<td>{{admin}}</td>
+					<td>
+						<input type="checkbox" id="ac{{admin}}" ng-model="newmultisigwallet.adminscheck[admin]">
+						<label for="ac{{admin}}"> </label>
+					</td>
+				</tr>
+				<tr>
+					<td>Helperbit</td>
+					<td>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="modal-footer">
+			<a href="" ng-click="backRedirect ('/me/wallet')" class="btn btn-fail" translate>Close</a>
+			<button type="button" class="btn btn-default" translate ng-click="newMultisigAddressNext ()">Next</button>
+		</div>
+	</div>
+	<div class="modal-content" ng-if="newmultisigwallet.phase == 1">
+		<div class="modal-body">
+			<div align="center"><i class="fa fa-envelope" style="color: #05a852; font-size:700%;"></i></div>
+			<br>
+			<p translate>The new multisignature wallet is almost created; the administrators will receive an email with instruction to complete their part of the wallet.</p>
+		</div>
+		<div class="modal-footer">
+			<button ng-click="backRedirect ('/me/wallet')" class="btn btn-fail" translate>Close</button>
+		</div>
+	</div>
+	</div>
+</div>

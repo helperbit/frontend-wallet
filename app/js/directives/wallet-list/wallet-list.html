@@ -1,0 +1,119 @@
+<div ng-if="wallets[0] === undefined && error == 'EBC5'" align="center" style="font-size: 120%">
+	<p translate>You decided to convert your donations to local currency, wallet is disabled.</p><br>
+</div>
+
+<div ng-if="wallets[0] === undefined && error != 'EBC5' && adminof[0] === undefined" align="center" style="font-size: 120%">
+	<p translate>Nothing here yet.</p><br>
+	<a ng-if="select !== undefinied" href="/me/wallet" class="btn btn-fail btn-lg" translate>Create a wallet</a>
+</div>
+
+
+<div ng-if="wallets[0] === undefined && counter" translate>You have {{wallets.length}} of 10 possible wallets.</div>
+
+<table ng-if="wallets[0] !== undefined || adminof[0] !== undefined" class="table">
+	<thead>
+		<td><translate>Address</translate>
+			<div class="separator-padded">&nbsp;</div>
+		</td>
+		<td><translate>Label</translate>
+			<div class="separator-padded">&nbsp;</div>
+		</td>
+		<td ng-if="select === undefinied">
+			<translate tooltip title="{{'Donations are received in this address'|translate}}" data-container="body"
+				data-template='<div class="tooltip" role="tooltip" style="padding-bottom: 1em;"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'>Default</translate>
+			<div class="separator-padded">&nbsp;</div></td>
+		<td><translate>Balance</translate>
+			<div class="separator-padded">&nbsp;</div>
+		</td>
+		<td></td>
+	</thead>
+	<tbody ng-repeat="w in wallets">
+		<tr ng-if="w.ismultisig == false">
+			<td style="max-width: 80px; overflow: hidden; text-overflow:ellipsis">{{w.address}}</td>
+			<td>{{w.label|crop:35}}</td>
+			<td align="center" ng-if="select === undefinied">
+				<input type="radio" name="wdefault" ng-model="receiveaddress" ng-change="receive(w.address)" value="{{w.address}}" />
+			</td>
+			<td align="left">
+				<address-balance address="w.address"></address-balance>					
+			</td>
+			<td ng-if="select === undefinied" align="center">
+				<span class="label label-warning" ng-show="!w.segwit">Legacy</span>
+				<a href="" class="tooltip-link" tooltip title="{{'Send funds'|translate}}">
+					<button type="button" ng-click="withdraw(w)" class="btn btn-fail btn-sm"><i class="fa fa-sign-out"></i></button>
+				</a>
+				<a href="" class="tooltip-link" tooltip title="{{'Receive funds'|translate}}">
+					<button type="button" ng-click="deposit(w)" class="btn btn-default btn-sm"><i class="fa fa-sign-in"></i></button>
+				</a>
+				<a href="" class="tooltip-link" tooltip title="{{'Settings'|translate}}">
+					<button type="button" ng-click="settings(w)" class="btn btn-fail btn-sm"><i class="fa fa-gear"></i></button>
+				</a>
+			</td>
+			<td ng-if="select !== undefinied" align="center">
+				<input type="radio" name="address" ng-model="selected" ng-change="select ({{w}})" value="{{w}}"/>
+			</td>
+		</tr>
+
+
+		<!-- MULTISIG -->
+		<tr ng-if="w.ismultisig != false">
+			<td style="max-width: 80px; overflow: hidden; text-overflow:ellipsis">
+				<span ng-if="!w.multisig.active">
+					<translate>In progress</translate>
+					({{w.pubkeys.length}} of {{w.multisig.admins.length}})
+				</span>
+				<span ng-if="w.multisig.active">{{w.address}}<copy-address/></span>
+			</td>
+			<td>{{w.label|crop:35}}</td>
+			<td align="center" ng-if="select === undefinied">
+				<input type="radio" name="wdefault" ng-disabled="!w.multisig.active" ng-model="receiveaddress" ng-change="receive(w.address)" value="{{w.address}}" />
+			</td>
+			<td align="left">
+				<address-balance address="w.address" ng-if="w.multisig.active"></address-balance>					
+			</td>
+			<td align="center" ng-if="select === undefinied">
+				<span class="label label-warning" ng-show="!w.segwit">Legacy</span>
+				<a href="" class="tooltip-link" tooltip title="{{'Send funds'|translate}}">
+					<button type="button" ng-disabled="!w.multisig.active" ng-click="withdraw(w)" class="btn btn-fail btn-sm"><i class="fa fa-sign-out"></i></button>
+				</a>
+				<a href="" class="tooltip-link" tooltip title="{{'Receive funds'|translate}}">
+					<button type="button" ng-disabled="!w.multisig.active" ng-click="deposit(w)" class="btn btn-default btn-sm"><i class="fa fa-sign-in"></i></button>
+				</a>
+				<a href="" class="tooltip-link" tooltip title="{{'Settings'|translate}}" >
+					<button type="button" ng-click="settings(w)" class="btn btn-fail btn-sm"><i class="fa fa-gear"></i></button>
+				</a>
+			</td>
+
+			<td ng-if="select !== undefinied" align="center">
+				<input type="radio" name="address" ng-model="selected" ng-change="select ({{w}})" value="{{w}}"/>
+			</td>
+		</tr>
+	</tbody>
+	<tbody>
+		<!-- MULTISIG -->
+		<tr ng-repeat="w in adminof" >
+			<td style="max-width: 80px; overflow: hidden; text-overflow:ellipsis">
+				<span ng-if="!w.multisig.active">
+					<translate>In progress</translate>
+					({{w.pubkeys.length}} of {{w.multisig.admins.length}})
+				</span>
+				<span ng-if="w.multisig.active">{{w.address}}</span>
+			</td>
+			<td>{{w.label|crop:35}}</td>
+			<td ng-if="select === undefinied"></td>
+			<td align="left">
+				<address-balance address="w.address" ng-if="w.multisig.active"></address-balance>
+			</td>
+			<td align="center">
+				<span class="label label-warning" ng-show="!w.segwit">Legacy</span>
+				<span class="label label-success" style="line-height: 2.5;" tooltip title="{{'This wallet belongs to this organization where you are an admin'|translate}}"><a href="/user/{{w.owner}}"><i class="fa fa-institution"></i> {{w.owner}}</a></span>&nbsp;
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<div class="row" ng-if="footer">
+	<div class="col-md-6"></div>
+	<div class="col-md-6"><button ng-click="reload ()" class="btn btn-block btn-fail"><i class="fa fa-refresh"></i> <translate>Reload</translate></button></div>
+	<!--<div class="col-md-6"><button ng-click="new ()" class="btn btn-block btn-default"><translate>New address</translate></button></div>-->
+</div>

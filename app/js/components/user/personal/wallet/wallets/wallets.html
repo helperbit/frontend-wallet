@@ -1,0 +1,59 @@
+<div class="header" align="center">
+	<h3 class="title" translate>wallet</h3>
+	<p class="subtitle" translate>Handle your Bitcoin accounts</p>
+	<img class="triangle" style="margin-top: 0.0em;" src="media/triangle.svg" />
+</div>
+
+<modal mid="merchantProofSingleUserErrorModal" content="true">
+	<!-- No tx -->
+	<div class="modal-content" >
+		<div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" translate>Error</h4>
+        </div>
+		<div class="modal-body">
+			<translate>This feature is not available for single users.</translate>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" translate data-dismiss="modal" aria-label="Close">Close</button>
+		</div>
+	</div>
+</modal>
+
+<div ng-include="'js/components/user/personal/wallet/wallets/merchantproof.html'" ng-if="user.usertype != 'singleuser'"></div>
+<div ng-include="'js/components/user/personal/wallet/wallets/deposit.html'"></div>
+<div ng-include="'js/components/user/personal/wallet/wallets/settings.html'"></div>
+<div ng-include="'js/components/user/personal/wallet/wallets/sign.html'"></div>
+
+<div class="row">
+	<div class="col-md-3 page-composable-col" style="top: 0px; position: sticky;">
+		<div class="page page-composable">
+		<sidebar></sidebar>
+		</div>
+	</div>
+	<div class="col-md-6 page-composable-col">
+		<div class="page page-composable profile-wallet"  style="padding: 1.5em;">
+			<wallet-list receiveaddress="receiveaddress" receive="receive" wallets="wallets" withdraw="withdraw"
+				deposit="deposit" settings="settings" footer="true"></wallet-list> <!--new="newAddress"></wallet-list>-->
+
+			<br>
+			<div class="row">
+				<div feature="singleuserwallet" class="col-md-12" ng-if="user.usertype == 'singleuser'">
+					<button ng-if="wallets.length >= 10" class="btn btn-block btn-default" disabled><i class="fa fa-file"></i> <translate>Create new address</translate></button>
+					<a ng-if="wallets.length < 10" href="/me/wallet/new" class="btn btn-block btn-default"><translate>Create new address</translate></a>
+				</div>
+				<div class="col-md-12" ng-if="user.usertype == 'company'">
+					<button ng-if="wallets.length >= 10" class="btn btn-block btn-default" disabled><i class="fa fa-file"></i> <translate>Create new address</translate></button>
+					<a ng-if="wallets.length < 10" href="/me/wallet/new" class="btn btn-block btn-default"><translate>Create new address</translate></a>
+				</div>
+				<div class="col-md-4" ng-if="user.usertype != 'singleuser' && user.usertype != 'company'">
+					<a href="/me/admin" class="btn btn-fail btn-block"><i class="fa fa-users"></i> <translate>Manage admins</translate></a>
+				</div>
+				<div class="col-md-8" ng-if="user.usertype != 'singleuser' && user.usertype != 'company'">
+					<button ng-if="wallets.length >= 10" class="btn btn-block btn-default" disabled><i class="fa fa-file"></i> <translate>Create new address</translate></button>
+					<a ng-if="wallets.length < 10" href="/me/wallet/newmultisig" class="btn btn-block btn-default"><i class="fa fa-file"></i> <translate>Create new address</translate></a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

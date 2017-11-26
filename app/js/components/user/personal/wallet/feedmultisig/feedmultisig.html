@@ -1,0 +1,112 @@
+<div class="header" align="center">
+	<h3 class="title"><translate>multisig wallet feed</translate> ({{newwallet.phase+1}}/4)</h3>
+	<p class="subtitle" translate>Insert your signature for a new multisig wallet</p>
+	<img class="triangle" style="margin-top: 0.0em;" src="media/triangle.svg" />
+</div>
+
+<div class="page-modalized">
+	<div class="modal-content" ng-if="newwallet.invalid == true && newwallet.phase == 0">
+		<div class="modal-body" style="color: #000" align="left">
+			<p translate>The link you are opening is expired or it is not valid or you are trying to access to your single user account while another account is already logged in.</p>				
+		</div>
+		<div class="modal-footer">
+			<a href="/me/wallet" class="btn btn-fail" translate>Close</a>
+		</div>
+	</div>
+
+	<div class="modal-content" ng-if="newwallet.invalid == false && newwallet.phase == 0">
+		<div class="modal-body">
+			<p>
+				<translate>12 words passphrase is just created client-side in the box below. These 12 words lets you sign transactions created by the organization</translate> 
+				<a ng-href="/user/{{newwallet.organization}}" target="_blank"><i><b>{{newwallet.organization}}</b></i></a>
+				<translate>for the wallet</translate> <i>"{{newwallet.label}}"</i> </translate> (<a ng-click="renewMnemonic ()" href=""><translate>click here to generate a new 12 words passphrase</translate></a>).
+			</p>
+			<mnemonic-view mnemonic="newwallet.mnemonic"></mnemonic-view>
+
+			<div id="printSection"> 
+					<mnemonic-view mnemonic="newwallet.mnemonic"></mnemonic-view>
+			</div>
+			<br>
+			<div style="background-color: #d01f2f; color: #fff; padding: 10px">
+				<div style="margin-bottom: 10px; font-size: 110%;"><b><i class="fa fa-exclamation-triangle"></i> Write your passphrase down and keep it safe</b></div>
+				<div><p><translate>If you lose this passphrase, you will lose access to the organization wallet</translate>.<br>
+				<translate>If someone gets your passphrase, they gain access to your wallet</translate>.<br>
+				<translate>We do not store your passphrase and cannot recover it if lost</translate>.</p></div>
+			</div>
+			<br>
+			<input type="checkbox" id="wiaccept" ng-model="newwallet.accept">
+			<label for="wiaccept" translate>I have written down or otherwise securely stored my 12 words passphrase</label>
+			<br>
+		</div>
+		<div class="modal-footer">
+			<a href="/me/wallet" class="btn btn-fail" translate>Go back</a>
+			<button type="button" class="btn btn-default" translate ng-click="printSeed()">Print the passphrase</button>
+			<button type="button" class="btn btn-default" ng-disabled="!newwallet.accept" translate ng-click="newAddressNext ()">Next</button>
+		</div>
+	</div>
+	<div class="modal-content" ng-if="newwallet.phase == 1">
+		<div class="modal-body">
+			<div ng-if="newwallet.error == 'XM1'" class="alert alert-danger" role="alert" translate>You typed the wrong words</div>
+
+			<p translate>Type here the requested words of the passphrase displayed in the previous windows</p>
+			<span ng-repeat="v in newwallet.verifymn">
+				<b>{{v.index|ordinal}} word:</b> 
+				<input class="form-control" type="text" ng-model="v.insert"></input><br>
+			</span>
+		</div>
+		<div class="modal-footer">
+			<div class="row">
+				<div class="col-md-4" align="left">
+					<button type="button" class="btn btn-fail" ng-if="!newwallet.loading" translate ng-click="newAddressBack()">Back</button>
+				</div>
+				<div class="col-md-8">
+					<button type="button" class="btn btn-default" loading="newwallet.loading" translate ng-click="multisigFeedNext()">Set</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="modal-content" ng-if="newwallet.phase == 2">
+		<div class="modal-body">
+			<p translate>A backup file will allow you to restore your key even if you forgot the passphrase and it is necessary to recover funds without the intervention of Helperbit. Insert a password below to encrypt the backup file.</p>
+			
+			<translate>Backup file password:</translate>
+			<input class="form-control" id="backpass" type="{{newwallet.visibility}}" value="" name="{{rnd}}" id="{{rnd}}" autocomplete="new-password" ng-model="newwallet.enckey" />
+			<br>
+			<translate>Repeat backup file password:</translate>
+			<input class="form-control" id="backpass2" type="{{newwallet.visibility}}" value="" name="{{rnd}}2" id="{{rnd}}2" autocomplete="new-password2" ng-model="newwallet.enckey2" />
+			<br>
+			<input type="checkbox" id="wipass" ng-model="newwallet.visibility" ng-true-value="'text'" ng-false-value="'password'">
+			<label for="wipass" translate>Show / Hide backup password</label>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" loading="newwallet.loading" ng-disabled="newwallet.enckey != newwallet.enckey2" translate ng-click="multisigFeedDo()">Next</button>
+		</div>
+	</div>
+
+	<div class="modal-content" ng-if="newwallet.phase == 3  && newwallet.error == ''">
+		<div class="modal-body">
+			<div align="center"><i class="fa fa-check-circle" style="color: #05a852; font-size:700%;"></i></div>
+			<br>
+			<p translate>Your part for the wallet creation is done! Remember to store your address passphrase, this will be necessary to sign transactions created by the organization.</p>
+			<br>
+			<p translate>Now download the backup file; it will help you to restore the key if you lose the passphrase and it is necessary to recover funds without the intervention of Helperbit.</p>
+		</div>
+		<div class="modal-footer">
+			<a type="button" class="btn btn-default" id="download-backup"
+				download="hbwallet_{{newwallet.organization}}_{{newwallet.user}}_{{newwallet.labelshort}}.json" ng-click="downloadBackup()"
+				ng-href="data:text/json;charset=utf-8,{{newwallet.file}}">
+					<i class="fa fa-download"></i> <translate>Download backup</translate></a>
+			<a href="/me/wallet" ng-if="newwallet.downloaded" class="btn btn-fail" translate>Close</a>
+		</div>
+	</div>
+
+	<div class="modal-content" ng-if="newwallet.phase == 3 && newwallet.error != ''">
+		<div class="modal-body" translate>
+			There was an error during the procedure.
+		</div>
+		<div class="modal-footer">
+			<a class="btn btn-fail" href="/me/wallet" translate>Go back</a>
+		</div>
+	</div>
+</div>

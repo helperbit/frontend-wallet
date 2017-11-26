@@ -1,0 +1,310 @@
+<!-- New withdraw Modal -->
+<div class="modal-header">
+	<button type="button" class="close" aria-label="Close" ng-click="cancel ()">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<h4 class="modal-title" id="myModalLabel" translate>Send</h4>
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+	<li role="presentation" class="active">
+		<a href="" data-target="#withdraw-send" aria-controls="withdraw-send" role="tab" data-toggle="tab" translate>Send money</a>
+	</li>
+	<li role="presentation" ng-if="wallet.ismultisig">
+		<a href="" data-target="#withdraw-pendingsign" aria-controls="withdraw-pendingsign" role="tab" data-toggle="tab">
+			<translate>Pending</translate>
+			<!--<span class="label label-danger">{{wallet.pendingtxs.length}}</label>-->
+		</a>
+	</li>
+	<li role="presentation">
+		<a href="" data-target="#withdraw-history" aria-controls="withdraw-history" role="tab" data-toggle="tab" translate>History</a>
+	</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+	<div role="tabpanel" class="tab-pane active" id="withdraw-send">
+		<div ng-if="withdrawal.step == 0 && !wallet.ismultisig && mtype == 'eventdonation'">
+			<div class="modal-body">
+				<sanity-error error="withdrawal.error"></sanity-error>
+				<div ng-if="withdrawal.error.error == 'E'" class="alert alert-danger" role="alert" translate>Generic error, try again later</div>
+				<div ng-if="withdrawal.error.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+				<div ng-if="withdrawal.error.error == 'EW1'" class="alert alert-danger" role="alert" translate>Not enough funds</div>
+				<div ng-if="withdrawal.error.error == 'XIM'" class="alert alert-danger" role="alert" translate>Invalid passphrase</div>
+
+				<translate>Donation to
+					<b>{{distributionn}}</b> users in the event
+					<a ng-href="/event/{{event}}">{{event}}</a>
+				</translate>
+				<br>
+				<br>
+				<translate>Amount to send</translate>: {{withdrawal.value|money}}
+				<br>
+				<hr>
+				<span style="font-size: 80%;" translate>An additional fee of {{withdrawal.fee|money}} is automatically added to assure that the transaction will be confirmed.
+					The total amount spent will be {{(withdrawal.value + withdrawal.fee)|money}}</span>
+				<br>
+				<span style="font-size: 80%">
+					<translate>You can modify the fee amount for statistically decrease the confirmation delay</translate>:</span>
+				<select class="form-control" ng-model="withdrawal.feeprofile" ng-change="changedFeeProfile ()">
+					<option value="fastest">
+						<translate>Fastest</translate> ({{fees.fastest|money}})</option>
+					<option value="halfhour">
+						<translate>Half hour</translate> ({{fees.halfhour|money}})</option>
+					<option value="hour">
+						<translate>Hour</translate> ({{fees.hour|money}})</option>
+					<option value="slowest">
+						<translate>Slowest</translate> ({{fees.slowest|money}})</option>
+				</select>
+
+				<hr>
+				<translate>Passphrase</translate>:
+				<span ng-init="showpassphrase = true">
+					<input type="text" ng-attr-type="{{ showpassphrase ? 'text' : 'password' }}" class="form-control" ng-model="withdrawal.mnemonic"
+					 value="{{withdrawal.mnemonic}}" />
+					<div align="right">
+						<a href="" ng-click="showpassphrase = !showpassphrase">
+							<span ng-if="showpassphrase" translate>Hide passphrase</span>
+							<span ng-if="!showpassphrase" translate>Show passphrase</span>
+						</a>
+					</div>
+				</span>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" loading="withdrawal.loading" ng-click="eventDonate ();" translate>Next</button>
+			</div>
+		</div>
+
+
+		<div ng-if="withdrawal.step == 0 && !wallet.ismultisig && mtype != 'eventdonation'" ng-form name="withdrawSingle">
+			<div class="modal-body">
+				<sanity-error error="withdrawal.error"></sanity-error>
+				<div ng-if="withdrawal.error.error == 'E'" class="alert alert-danger" role="alert" translate>Generic error, try again later</div>
+				<div ng-if="withdrawal.error.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+				<div ng-if="withdrawal.error.error == 'EW1'" class="alert alert-danger" role="alert" translate>Not enough funds</div>
+				<div ng-if="withdrawal.error.error == 'XIM'" class="alert alert-danger" role="alert" translate>Invalid passphrase</div>
+				<div ng-if="!withdrawSingle.amount.$valid || withdrawal.value <= 0" class="alert alert-danger" role="alert" translate>Invalid amount</div>
+
+				<div align="center">
+					<currency-selector border="none"></currency-selector>
+				</div>
+
+				<translate>Amount to send</translate> ({{null|money}}):
+				<input ng-pattern="/^[0-9]+(\.[0-9]{1,8})?$/" type="text" class="form-control" name="amount" ng-model="withdrawal.value"
+				 ng-disabled="fixedValue" money-input value="{{withdrawal.value}}" />
+				<a ng-hide="fixedValue" style="font-size: 80%" href="" ng-click="withdrawal.value = balance.balance" translate>Click here to select all the available balance of {{balance.balance|money}}.</a>
+				<br>
+				<br>
+				<translate>Passphrase</translate>:
+				<span ng-init="showpassphrase = true">
+					<input type="text" ng-attr-type="{{ showpassphrase ? 'text' : 'password' }}" class="form-control" ng-model="withdrawal.mnemonic"
+					 value="{{withdrawal.mnemonic}}" />
+					<div align="right">
+						<a href="" ng-click="showpassphrase = !showpassphrase">
+							<span ng-if="showpassphrase" translate>Hide passphrase</span>
+							<span ng-if="!showpassphrase" translate>Show passphrase</span>
+						</a>
+					</div>
+				</span>
+				<br>
+				<translate>Destination address</translate>:
+				<input type="text" class="form-control" value="withdrawal.destination" ng-disabled="fixedDestination" ng-model="withdrawal.destination"
+				/>
+			</div>
+			<div class="modal-footer">
+				<button type="button" ng-hide="mtype == 'wdonation'" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+				<button type="button" class="btn btn-default" loading-disabled="!withdrawSingle.$valid || withdrawal.value <= 0" loading="withdrawal.loading"
+				 ng-click="withdrawFeeDo (wallet);" translate>Next</button>
+			</div>
+		</div>
+		<div ng-if="withdrawal.step == 0 && wallet.ismultisig && mtype != 'eventdonation'" ng-form name="withdrawMultisig">
+			<div class="modal-body">
+				<sanity-error error="withdrawal.error"></sanity-error>
+				<div ng-if="withdrawal.error.error == 'E'" class="alert alert-danger" role="alert" translate>Generic error, try again later</div>
+				<div ng-if="withdrawal.error.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+				<div ng-if="withdrawal.error.error == 'EW1'" class="alert alert-danger" role="alert" translate>Not enough funds</div>
+				<div ng-if="withdrawal.error.error == 'XIM'" class="alert alert-danger" role="alert" translate>Invalid passphrase</div>
+
+				<div align="center">
+					<currency-selector border="none"></currency-selector>
+				</div>
+
+				<translate>Amount to send</translate> ({{null|money}}):
+				<input ng-pattern="/^[0-9]+(\.[0-9]{1,8})?$/" type="text" class="form-control" ng-disabled="fixedValue" name="amount" ng-model="withdrawal.value"
+				 money-input value="{{withdrawal.value}}" />
+				<br>
+				<a ng-hide="fixedValue" style="font-size: 90%" href="" ng-click="withdrawal.value = balance.balance" translate>Click here to select all the available balance of {{balance.balance|money}}.</a>
+				<br>
+				<br>
+				<translate>Transaction description</translate>
+				<i class="fa fa-info-circle" tooltip title="{{'Explain where these funds are going; this information will be public.'|translate}}"></i>:
+				<textarea ng-model="withdrawal.description" ng-disabled="fixedDescription">
+					{{withdrawal.description}}
+				</textarea>
+				<br>
+				<translate>Destination address</translate>:
+				<input type="text" class="form-control" value="withdrawal.destination" ng-disabled="fixedDestination" ng-model="withdrawal.destination"
+				/>
+			</div>
+			<div class="modal-footer">
+				<button type="button" ng-hide="mtype == 'wdonation'" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+				<button type="button" class="btn btn-default" loading-disabled="!withdrawMultisig.$valid || withdrawal.value <= 0" loading="withdrawal.loading"
+				 ng-click="withdrawFeeDo (wallet);" translate>Next</button>
+			</div>
+		</div>
+
+		<!-- Fee and confirmation -->
+		<div ng-if="withdrawal.step == 1 && wallet.ismultisig">
+			<div class="modal-body">
+				<sanity-error error="withdrawal.error"></sanity-error>
+				<div ng-if="withdrawal.error.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+				<div ng-if="withdrawal.error.error == 'EW1'" class="alert alert-danger" role="alert" translate>Not enough funds</div>
+				<div ng-if="withdrawal.error.error == 'XIM'" class="alert alert-danger" role="alert" translate>Invalid passphrase</div>
+
+				<translate>Amount to send</translate>: {{withdrawal.vvalue|money}}
+				<br>
+				<span style="font-size: 80%;" translate>An additional fee of {{withdrawal.fee|money}} is automatically added to assure that the transaction will be confirmed.
+					The total amount spent will be {{(withdrawal.vvalue + withdrawal.fee)|money}}</span>
+				<br>
+				<br>
+				<translate>Transaction description</translate>:
+				<span style="font-size: 80%;">{{withdrawal.description}}</span>
+				<br>
+				<translate>Destination address</translate>:
+				<span style="font-size: 80%;">{{withdrawal.destination}}</span>
+				<br>
+				<hr>
+				<span style="font-size: 80%">
+					<translate>You can modify the fee amount for statistically decrease the confirmation delay</translate>:</span>
+				<select class="form-control" ng-model="withdrawal.feeprofile" ng-change="changedFeeProfile ()">
+					<option value="fastest">
+						<translate>Fastest</translate> ({{fees.fastest|money}})</option>
+					<option value="halfhour">
+						<translate>Half hour</translate> ({{fees.halfhour|money}})</option>
+					<option value="hour">
+						<translate>Hour</translate> ({{fees.hour|money}})</option>
+					<option value="slowest">
+						<translate>Slowest</translate> ({{fees.slowest|money}})</option>
+				</select>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-fail" ng-click="withdrawGoBack()" translate>Go back</button>
+				<button type="button" class="btn btn-default" loading="withdrawal.loading" ng-click="withdrawMultisigDo (wallet);" translate>Send</button>
+			</div>
+		</div>
+		<div ng-if="withdrawal.step == 1 && !wallet.ismultisig">
+			<div class="modal-body">
+				<sanity-error error="withdrawal.error"></sanity-error>
+				<div ng-if="withdrawal.error.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+				<div ng-if="withdrawal.error.error == 'EW1'" class="alert alert-danger" role="alert" translate>Not enough funds</div>
+				<div ng-if="withdrawal.error.error == 'XIM'" class="alert alert-danger" role="alert" translate>Invalid passphrase</div>
+
+				<translate>Amount to send</translate>: {{withdrawal.vvalue|money}}
+				<br>
+				<span style="font-size: 80%;" translate>An additional fee of {{withdrawal.fee|money}} is automatically added to assure that the transaction will be confirmed.
+					The total amount spent will be {{(withdrawal.vvalue + withdrawal.fee)|money}}</span>
+				<br>
+				<br>
+				<translate>Destination address</translate>:
+				<span style="font-size: 80%;">{{withdrawal.destination}}</span>
+				<br>
+				<hr>
+				<span style="font-size: 80%">
+					<translate>You can modify the fee amount for statistically decrease the confirmation delay</translate>:</span>
+				<select class="form-control" ng-model="withdrawal.feeprofile" ng-change="changedFeeProfile ()">
+					<option value="fastest">
+						<translate>Fastest</translate> ({{fees.fastest|money}})</option>
+					<option value="halfhour">
+						<translate>Half hour</translate> ({{fees.halfhour|money}})</option>
+					<option value="hour">
+						<translate>Hour</translate> ({{fees.hour|money}})</option>
+				</select>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-fail" ng-click="withdrawGoBack()" translate>Go back</button>
+				<button type="button" class="btn btn-default" loading="withdrawal.loading" ng-click="withdrawDo (wallet);" translate>Send</button>
+			</div>
+		</div>
+
+		<!-- Withdrawal do -->
+		<div ng-if="withdrawal.step == 2 && !wallet.ismultisig">
+			<div class="modal-body">
+				<div align="center">
+					<i class="fa fa-check-circle" style="color: #05a852; font-size:700%;"></i>
+				</div>
+				<br>
+
+				<span ng-if="mtype != 'eventdonation'">
+					<translate>Your transaction has been sent</translate>.
+					<br>
+					<br>
+				</span>
+				<span ng-if="mtype == 'eventdonation'">
+					<translate>Your donation has been sent</translate>:
+					<a href="/donation/{{withdrawal.txid}}">donation page</a>
+					<br>
+					<br>
+				</span>
+				<input type="text" class="form-control" value="{{withdrawal.txid}}" />
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+			</div>
+		</div>
+		<div ng-if="withdrawal.step == 2 && wallet.ismultisig">
+			<div class="modal-body">
+				<div align="center">
+					<i class="fa fa-check-circle" style="color: #05a852; font-size:700%;"></i>
+				</div>
+				<br>
+				<translate>Your transaction has been prepared; the transaction need to be signed by {{wallet.multisig.n}} wallet administrators
+					(an email is sent to them)</translate>.
+				<br>
+				<br>
+			</div>
+			<div class="modal-footer">
+				<button type="button" ng-hide="mtype == 'wdonation'" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+			</div>
+		</div>
+	</div>
+	<!-- Multisig pending -->
+	<div role="tabpanel" class="tab-pane" id="withdraw-pendingsign" ng-if="wallet.ismultisig">
+		<div class="modal-body">
+			<div ng-if="wallet.pendingtxs.length == 0" align="center">
+				<i translate>There are no transactions pending signing</i>
+			</div>
+
+			<table ng-if="wallet.pendingtxs.length != 0" class="table table-compressed">
+				<thead>
+					<td translate>Description</td>
+					<td translate>Signatures</td>
+					<td translate>Value [{{null|money}}]</td>
+					<td translate>Date</td>
+					<td></td>
+				</thead>
+				<tr ng-repeat="tx in wallet.pendingtxs" ng-if="tx.status == 'signing'">
+					<td>{{tx.description}}</td>
+					<td>{{tx.signers.length}} of {{tx.n}}</td>
+					<td>{{tx.value|money:'full':false}}</td>
+					<td>{{tx.time|date}}</td>
+					<td>
+						<button class="btn btn-default btn-sm" request-confirmation text="{{'Are you sure to cancel this pending transaction?'|translate}}"
+						 ng-click="removeMultisigTransaction (tx._id)" translate>Cancel</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div class="modal-footer">
+			<button type="button" ng-hide="mtype == 'wdonation'" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+		</div>
+	</div>
+	<div role="tabpanel" class="tab-pane" id="withdraw-history">
+		<div class="modal-body">
+			<transaction-list out="true" multisig="wallet.ismultisig" txs="wallet.txs"></transaction-list>
+		</div>
+		<div class="modal-footer">
+			<button type="button" ng-hide="mtype == 'wdonation'" class="btn btn-fail" ng-click="cancel ()" translate>Close</button>
+		</div>
+	</div>
+</div>
+</div>

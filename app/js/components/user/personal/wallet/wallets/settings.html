@@ -1,0 +1,94 @@
+<!-- Wallet settings Modal -->
+<modal mid="settingsModal" title="{{'Settings' | translate}}" content="true">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title" id="myModalLabel" translate>Settings</h4>
+		</div>
+
+		<ul class="nav nav-tabs" role="tablist">
+			<li role="presentation" class="active">
+				<a href="" data-target="#setting-general" aria-controls="setting-general" role="tab" data-toggle="tab" translate>General</a>
+			</li>
+			<li role="presentation" ng-if="selectedwallet.ismultisig">
+				<a href="" data-target="#setting-admin" aria-controls="setting-admin" role="tab" data-toggle="tab" translate>Admins</a>
+			</li>
+			<li role="presentation" class="" ng-if="!selectedwallet.ismultisig">
+				<a href="" data-target="#setting-restore" aria-controls="setting-restore" role="tab" data-toggle="tab" translate>Restore from backup</a>
+			</li>
+			<li role="presentation" class="" feature="removewallet">
+				<a href="" data-target="#setting-danger" aria-controls="setting-danger" role="tab" data-toggle="tab" translate>Danger zone</a>
+			</li>
+		</ul>
+
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<div role="tabpanel" class="tab-pane active" id="setting-general">
+				<div class="modal-body">
+					<div ng-if="settings.error == 'E3'" class="alert alert-danger" role="alert" translate>Description should be long at least 4 characters.</div>
+					<translate>Edit wallet label</translate>: <input type="text" class="form-control" maxlength="35" value="{{selectedwallet.label}}" ng-model="selectedwallet.label" />
+					<br>
+					<a ng-click="update (selectedwallet)" class="btn btn-default btn-block" translate>Update</a>
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="setting-danger" feature="removewallet">
+				<div class="modal-body">
+					<div ng-if="settings.error == 'EF2'" class="alert alert-danger" role="alert" translate>Wallet not empty</div>
+					<div ng-if="settings.error == 'EW12'" class="alert alert-danger" role="alert" translate>Active multisig wallets cannot be deleted</div>
+				    <div align="center">
+						<a request-confirmation text="{{'Are you sure to delete this wallet?'|translate}}" ng-click="remove (selectedwallet)" loading="remove.loading" class="btn btn-fail btn-block btn-sm" translate>Remove wallet</a>
+					</div>
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="setting-restore">
+				<div class="modal-body">
+					<div ng-if="backup.error == 'XNJ'" class="alert alert-danger" role="alert" translate>Not a backup file</div>
+					<div ng-if="backup.error == 'XWP'" class="alert alert-danger" role="alert" translate>Wrong backup password</div>
+					<div ng-if="backup.error == 'XWA'" class="alert alert-danger" role="alert" translate>Wrong backup file: address mismatch</div>
+					<div ng-if="backup.error == 'XEW'" class="alert alert-danger" role="alert" translate>The wallet is empty</div>
+					<div ng-if="backup.error == 'XNF'" class="alert alert-danger" role="alert" translate>No backup file selected</div>
+					<div ng-if="backup.error == 'EW2'" class="alert alert-danger" role="alert" translate>Bad address</div>
+		  	        <div ng-if="backup.error == 'E'" class="alert alert-danger" role="alert" translate>Generic error, try again later</div>
+					  <div ng-if="backup.error == '' && backup.txid != ''" class="alert alert-success" role="alert"><translate>Transaction sent</translate>: <a href="{{backup.txid|explorer}}" target="_blank">{{backup.txid|limitTo:6}}...</a></div>
+		  	            					
+					<p translate>If you lose your passphrase, you can restore your funds by uploading the backup file and sending the funds to another address.</p>
+					<translate>Backup file</translate>:
+					<br>
+					<input type="file" accept="application/json" class="upload" ngf-select="loadBackupFile($file);"></input>
+					
+					<br>
+					<translate>Backup password</translate>:
+					<br>
+					<input type="password" class="form-control" value="" ng-model="backup.password" />
+
+					<br>
+					<translate>Destination address</translate>:
+					<br>
+					<input type="text" class="form-control" value="" ng-model="backup.destination" />
+					<br>
+					<div align="right">
+						<a ng-click="restoreBackup (selectedwallet)" loading="backup.loading" class="btn btn-block btn-default" translate>Send</a>
+					</div>
+				</div>
+			</div>
+			<div role="tabpanel" class="tab-pane" id="setting-admin">
+				<div class="modal-body">
+					<p translate>This is the list of admins that can sign your transactions; this wallet needs at least {{selectedwallet.multisig.n}} signature to broadcast a transaction.</p>
+
+					<table class="table table-compressed table-striped">
+						<tr ng-repeat="admin in selectedwallet.multisig.admins">
+							<td>
+								{{admin}}
+							</td>
+						</tr>
+						<tr><td>Helperbit</td></tr>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal-footer">
+			<button type="button" class="btn btn-fail" data-dismiss="modal" translate>Close</button>
+		</div>
+	</div>
+</modal>

@@ -1,0 +1,7 @@
+<div class="row" style="padding-right: 15px; padding-left: 15px">
+    <div class="col-md-3" ng-repeat="word in amnemonic" style="margin-bottom: 4px; padding-right: 4px; padding-left: 4px;">
+        <div style="border: 1px solid #bbb; width: 100%; padding-left: 4px; padding: 3px; padding-right: 4px; border-radius: 3px">
+            <b>{{amnemonic.indexOf (word) + 1|ordinal}}.</b> {{word}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+<!-- merchant proof -->
+<modal mid="merchantProofModal" content="true">
+	<!-- No tx -->
+	<div class="modal-content"  ng-if="merchantproof.phase == -1">
+		<div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" translate>Import proof of spent from merchant</h4>
+        </div>
+		<div class="modal-body">
+			<translate>There are no transaction to associate with this proof.</translate>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" translate data-dismiss="modal" aria-label="Close">Close</button>
+		</div>
+	</div>
+	
+	<!-- Select the tx -->
+	<div class="modal-content"  ng-if="merchantproof.phase == 0">
+		<div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel" translate>Import proof of spent from merchant</h4>
+        </div>
+		<div class="modal-body">
+			<div ng-if="merchantproof.error != ''" class="alert alert-danger" role="alert" translate>Generic error</div>
+
+			<translate>Select the transaction you want to associate with the {{merchantproof.merchant}} merchant proof:</translate>
+			<br><br>
+			<select class="form-control" style="width: 100%;" ng-model="merchantproof.tx">
+				<option value="{{tx}}" ng-repeat="tx in merchantproof.txs" selected>{{tx.description}} ({{tx.value|money}})</option>
+			</select>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-fail" translate data-dismiss="modal" aria-label="Close">Close</button>
+			<button type="button" class="btn btn-default" translate ng-click="merchantProofBind ()">Next</button>
+		</div>
+	</div>
+</modal>
